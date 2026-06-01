@@ -1,0 +1,97 @@
+schema_version: 1
+
+context:
+  name: nix
+  version: 2.3.16
+
+package:
+  name: ${{ name|lower }}
+  version: ${{ version }}
+
+source:
+  url: https://nixos.org/releases/nix/nix-${{ version }}/nix-${{ version }}.tar.xz
+  sha256: 7ee681b69f05b525492d202c3bedcd9dee1960bb818f62690f6c4493b7c2aabc
+  patches:
+    - patches/0001-add-cstdint-for-gcc14.patch
+    - patches/0002-drop-lboost_system-boost-1.74.patch
+
+build:
+  number: 5
+  skip: win
+
+requirements:
+  build:
+    - ${{ compiler('c') }}
+    - ${{ stdlib("c") }}
+    - ${{ compiler('cxx') }}
+    - pkg-config
+    - make
+  host:
+    - openssl
+    - brotli
+    - bzip2
+    - liblzma-devel
+    - curl
+    - sqlite
+    - libboost-devel
+    - editline
+    - libxml2
+    - libxslt
+    - bison
+    - flex
+    - zlib
+    - if: linux
+      then: libseccomp
+  run:
+    - brotli
+    - libcurl
+    - curl
+    - editline
+  ignore_run_exports:
+    by_name:
+      - libxslt
+      - libxml2
+
+tests:
+  - package_contents:
+      bin:
+        - nix
+        - nix-build
+        - nix-channel
+        - nix-collect-garbage
+        - nix-copy-closure
+        - nix-daemon
+        - nix-env
+        - nix-hash
+        - nix-instantiate
+        - nix-prefetch-url
+        - nix-shell
+        - nix-store
+      lib:
+        - libnixutil
+        - libnixstore
+        - libnixexpr
+        - libnixmain
+      files:
+        - share/nix/corepkgs/derivation.nix
+  - script:
+      - nix --help
+
+about:
+  license: LGPL-2.1-or-later
+  license_file: COPYING
+  summary: The Purely Functional Package Manager
+  description: |
+    Nix is a powerful package manager for Linux and other Unix systems
+    that makes package management reliable and reproducible. It provides
+    atomic upgrades and rollbacks, side-by-side installation of multiple
+    versions of a package, multi-user package management and easy setup
+    of build environments.
+  homepage: https://nixos.org/nix/
+  repository: https://github.com/NixOS/nix
+  documentation: https://nixos.org/nix/manual/
+
+extra:
+  recipe-maintainers:
+    - scopatz
+    - phreed

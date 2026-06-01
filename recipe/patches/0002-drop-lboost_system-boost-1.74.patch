@@ -1,0 +1,8 @@
+--- a/src/nix/local.mk
++++ b/src/nix/local.mk
+@@ -17,4 +17,4 @@ nix_LIBS = libexpr libmain libstore libutil
+
+-nix_LDFLAGS = -pthread $(SODIUM_LIBS) $(EDITLINE_LIBS) $(BOOST_LDFLAGS) -lboost_context -lboost_thread -lboost_system
++nix_LDFLAGS = -pthread $(SODIUM_LIBS) $(EDITLINE_LIBS) $(BOOST_LDFLAGS) -lboost_context -lboost_thread
+
+ $(foreach name, \
