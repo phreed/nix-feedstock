@@ -26,7 +26,7 @@ requirements:
     - ${{ compiler('cxx') }}
     - pkg-config
     - make
-    - xz
+    - xz-tools
   host:
     - openssl
     - brotli
