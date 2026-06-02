@@ -1,0 +1,13 @@
+--- a/src/nix-functional-tests/meson.build
++++ b/src/nix-functional-tests/meson.build
+@@ -235,11 +235,6 @@ foreach suite : suites
+   # external program. The following is a simple heuristic that suffices for now.
+   # [1]: https://github.com/mesonbuild/meson/issues/13877
+   deps = suite['deps']
+-  if meson.is_subproject()
+-    nix_subproject = subproject('nix')
+-    deps += [ nix ] + nix_subproject.get_variable('nix_symlinks_targets')
+-  endif
+   foreach script : suite['tests']
+     # Turns, e.g., `tests/functional/flakes/show.sh` into a Meson test target called
+     # `functional-flakes-show`.

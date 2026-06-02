@@ -1,0 +1,14 @@
+--- a/src/libstore/unix/build/linux-derivation-builder.cc
++++ b/src/libstore/unix/build/linux-derivation-builder.cc
+@@ -1,5 +1,11 @@
+ #ifdef __linux__
+
++#  include <sched.h>
++#  ifndef CLONE_NEWCGROUP
++/* CLONE_NEWCGROUP was added in Linux 4.6; provide a fallback for older headers */
++#    define CLONE_NEWCGROUP 0x02000000
++#  endif
++
+ #  include "store-config-private.hh"
+
+ #  include "nix/store/globals.hh"

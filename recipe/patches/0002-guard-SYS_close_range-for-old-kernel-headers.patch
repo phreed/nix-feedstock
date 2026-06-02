@@ -1,0 +1,15 @@
+--- a/src/libutil/unix/file-descriptor.cc
++++ b/src/libutil/unix/file-descriptor.cc
+@@ -79,7 +79,13 @@ static int unix_close_range(unsigned int first, unsigned int last, int flags)
+ {
+ #  if !HAVE_CLOSE_RANGE
++#    ifdef SYS_close_range
+     return syscall(SYS_close_range, first, last, (unsigned int) flags);
++#    else
++    /* SYS_close_range requires Linux 5.9+ kernel headers; fall back gracefully */
++    errno = ENOSYS;
++    return -1;
++#    endif
+ #  else
+     return close_range(first, last, flags);
+ #  endif

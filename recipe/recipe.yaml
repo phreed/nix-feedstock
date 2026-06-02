@@ -2,21 +2,25 @@ schema_version: 1
 
 context:
   name: nix
-  version: 2.3.16
+  version: 2.34.7
 
 package:
   name: ${{ name|lower }}
   version: ${{ version }}
 
 source:
-  url: https://nixos.org/releases/nix/nix-${{ version }}/nix-${{ version }}.tar.xz
-  sha256: 7ee681b69f05b525492d202c3bedcd9dee1960bb818f62690f6c4493b7c2aabc
-  patches:
-    - patches/0001-add-cstdint-for-gcc14.patch
-    - patches/0002-drop-lboost_system-boost-1.74.patch
+  - url: https://github.com/NixOS/nix/archive/refs/tags/${{ version }}.tar.gz
+    sha256: f317b0fd6cba73bf5c05e0fdda7ca4fae163bf28f8566572c5bd288a2f180c8a
+    patches:
+      - patches/0001-fix-functional-tests-depends-type.patch
+      - patches/0002-guard-SYS_close_range-for-old-kernel-headers.patch
+      - patches/0003-define-CLONE_NEWCGROUP-for-old-kernel-headers.patch
+  - url: https://github.com/BLAKE3-team/BLAKE3/archive/refs/tags/1.8.5.tar.gz
+    sha256: 220bd81286e2a0585beac66d41ac3f4c2c33ae8a4e339fc88cf22d5e00514fe9
+    target_directory: blake3
 
 build:
-  number: 5
+  number: 0
   skip: win
 
 requirements:
@@ -25,22 +29,24 @@ requirements:
     - ${{ stdlib("c") }}
     - ${{ compiler('cxx') }}
     - pkg-config
-    - make
+    - cmake
+    - meson >=1.1
+    - ninja
     - xz-tools
   host:
     - openssl
     - brotli
-    - bzip2
-    - liblzma-devel
     - curl
     - sqlite
     - libboost-devel
     - editline
-    - libxml2
-    - libxslt
-    - bison
-    - flex
     - zlib
+    - libarchive
+    - libsodium
+    - nlohmann_json
+    - libgit2
+    - bdw-gc
+    - toml11
     - if: linux
       then: libseccomp
   run:
@@ -48,10 +54,6 @@ requirements:
     - libcurl
     - curl
     - editline
-  ignore_run_exports:
-    by_name:
-      - libxslt
-      - libxml2
 
 tests:
   - package_contents:
@@ -73,8 +75,6 @@ tests:
         - libnixstore
         - libnixexpr
         - libnixmain
-      files:
-        - share/nix/corepkgs/derivation.nix
   - script:
       - nix --help
 
