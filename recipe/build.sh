@@ -2,7 +2,10 @@
 set -ex
 
 # Build and install libblake3 (not yet packaged in conda-forge)
+# Use the Ninja generator: the build env provides ninja, not make, so the
+# default "Unix Makefiles" generator fails to find CMAKE_MAKE_PROGRAM.
 cmake -S "${SRC_DIR}/blake3/c" -B blake3-build \
+    -GNinja \
     -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DCMAKE_BUILD_TYPE=Release \
