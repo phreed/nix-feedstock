@@ -2,14 +2,22 @@
 set -ex
 
 # Build and install libblake3 (not yet packaged in conda-forge)
-# On x86_64, BLAKE3's default "amd64-asm" SIMD path ships a hand-written .S file
-# that the conda assembler rejects (unknown mnemonic `jmp'), so force the
-# portable C-intrinsics path there. On aarch64/arm64 (neon) and ppc64le (none)
-# BLAKE3's auto-detection already avoids the amd64 assembly, so leave it alone.
-blake3_simd_args=()
+# These are cross-compiled builds (e.g. linux-aarch64/ppc64le build on linux-64,
+# osx-arm64 on osx-64), so BLAKE3's SIMD auto-detection reads the x86_64 *build
+# host* and wrongly selects "amd64-asm" for every target. That ships a
+# hand-written x86 .S file the assembler rejects on non-x86 targets (and even on
+# x86 the conda assembler rejects it). Set BLAKE3_SIMD_TYPE explicitly per the
+# *target* arch so we never rely on the broken auto-detection.
 case "${target_platform}" in
     linux-64 | osx-64)
-        blake3_simd_args+=("-DBLAKE3_SIMD_TYPE=x86-intrinsics")
+        blake3_simd_type="x86-intrinsics"
+        ;;
+    linux-aarch64 | osx-arm64)
+        blake3_simd_type="neon-intrinsics"
+        ;;
+    *)
+        # ppc64le and any other arch: no SIMD acceleration, portable C only.
+        blake3_simd_type="none"
         ;;
 esac
 
@@ -22,7 +30,7 @@ cmake -S "${SRC_DIR}/blake3/c" -B blake3-build \
     -DCMAKE_BUILD_TYPE=Release \
     -DBLAKE3_BUILD_SHARED=ON \
     -DBLAKE3_BUILD_TESTING=OFF \
-    "${blake3_simd_args[@]}"
+    -DBLAKE3_SIMD_TYPE="${blake3_simd_type}"
 cmake --build blake3-build --parallel "${CPU_COUNT}"
 cmake --install blake3-build
 
