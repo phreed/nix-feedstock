@@ -32,6 +32,8 @@ requirements:
     - cmake
     - meson >=1.1
     - ninja
+    - bison
+    - flex
     - xz-tools
   host:
     - openssl
