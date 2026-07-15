@@ -2,6 +2,17 @@
 set -ex
 
 # Build and install libblake3 (not yet packaged in conda-forge)
+# On x86_64, BLAKE3's default "amd64-asm" SIMD path ships a hand-written .S file
+# that the conda assembler rejects (unknown mnemonic `jmp'), so force the
+# portable C-intrinsics path there. On aarch64/arm64 (neon) and ppc64le (none)
+# BLAKE3's auto-detection already avoids the amd64 assembly, so leave it alone.
+blake3_simd_args=()
+case "${target_platform}" in
+    linux-64 | osx-64)
+        blake3_simd_args+=("-DBLAKE3_SIMD_TYPE=x86-intrinsics")
+        ;;
+esac
+
 # Use the Ninja generator: the build env provides ninja, not make, so the
 # default "Unix Makefiles" generator fails to find CMAKE_MAKE_PROGRAM.
 cmake -S "${SRC_DIR}/blake3/c" -B blake3-build \
@@ -10,7 +21,8 @@ cmake -S "${SRC_DIR}/blake3/c" -B blake3-build \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DCMAKE_BUILD_TYPE=Release \
     -DBLAKE3_BUILD_SHARED=ON \
-    -DBLAKE3_BUILD_TESTING=OFF
+    -DBLAKE3_BUILD_TESTING=OFF \
+    "${blake3_simd_args[@]}"
 cmake --build blake3-build --parallel "${CPU_COUNT}"
 cmake --install blake3-build
 
