@@ -53,11 +53,15 @@ export CPPFLAGS="${CPPFLAGS//-DNDEBUG/}"
 # some constexpr switch defaults still warn — keep as warning-only
 export CXXFLAGS="${CXXFLAGS} -Wno-error=return-type"
 
-# Build nix with Meson
+# Build nix with Meson.
+# ${MESON_ARGS} carries conda's --prefix/--libdir/--buildtype and, crucially for
+# cross builds, --cross-file. Without it Meson treats an osx-64 -> osx-arm64
+# build as native, compiles its sanity-check probe for arm64, then fails trying
+# to run that binary on the x86_64 build host ("Bad CPU type in executable").
+# Do not re-pass --prefix/--libdir/--buildtype here: MESON_ARGS already sets
+# them, and specifying an option twice makes Meson error.
 meson setup builddir \
-    --prefix="${PREFIX}" \
-    --libdir=lib \
-    --buildtype=release \
+    ${MESON_ARGS} \
     -Dunit-tests=false \
     -Dbindings=false \
     -Ddoc-gen=false \
