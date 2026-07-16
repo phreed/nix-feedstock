@@ -23,7 +23,12 @@ esac
 
 # Use the Ninja generator: the build env provides ninja, not make, so the
 # default "Unix Makefiles" generator fails to find CMAKE_MAKE_PROGRAM.
+# ${CMAKE_ARGS} carries conda's cross-compilation settings (sysroot, deployment
+# target, CMAKE_SYSTEM_NAME/PROCESSOR, cross ar/ranlib/ld). It is required for
+# the osx-64 -> osx-arm64 cross build, where the compiler alone doesn't tell
+# CMake the target arch and sysroot the way a GCC cross-compiler does on Linux.
 cmake -S "${SRC_DIR}/blake3/c" -B blake3-build \
+    ${CMAKE_ARGS} \
     -GNinja \
     -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
     -DCMAKE_INSTALL_LIBDIR=lib \
